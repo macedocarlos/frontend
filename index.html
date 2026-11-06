@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4f4ef" />
+    <meta name="description" content="Painel de gestão da loja conectado à API." />
+    <title>Varejo | Gestão da loja</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <a class="brand" href="#inicio" aria-label="Varejo, início">
+          <span class="brand-mark"><i data-lucide="store"></i></span>
+          <span class="brand-copy"><strong>varejo</strong><small>gestão da loja</small></span>
+        </a>
+        <div class="nav-caption">VISÃO GERAL</div>
+        <nav class="primary-nav" aria-label="Navegação principal">
+          <button class="nav-link active" data-page="dashboard"><i data-lucide="layout-dashboard"></i><span>Painel</span></button>
+        </nav>
+        <div class="nav-caption section-caption">OPERAÇÃO</div>
+        <nav class="resource-nav" id="resource-nav" aria-label="Recursos da loja"></nav>
+        <div class="sidebar-bottom">
+          <div class="store-chip"><span class="store-avatar">L</span><span><strong>Loja principal</strong><small>Operação</small></span><i data-lucide="chevrons-up-down"></i></div>
+          <button class="api-link" id="api-settings"><span class="status-dot" id="api-dot"></span><span id="api-status">Conectando à API</span><i data-lucide="settings-2"></i></button>
+        </div>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <button class="icon-button menu-button" id="menu-toggle" aria-label="Abrir menu"><i data-lucide="menu"></i></button>
+          <div class="breadcrumbs"><span>Loja</span><i data-lucide="chevron-right"></i><strong id="current-section">Painel</strong></div>
+          <div class="topbar-right"><span class="today-label" id="today-label"></span><span class="profile-avatar">CS</span></div>
+        </header>
+        <div class="page-content" id="page-content"></div>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="modal-backdrop" hidden>
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <header class="modal-header"><div><div class="eyebrow">CADASTRO</div><h2 id="modal-title">Novo registro</h2></div><button class="icon-button" id="modal-close" aria-label="Fechar"><i data-lucide="x"></i></button></header>
+        <form id="record-form"><div class="form-grid" id="form-fields"></div><footer class="modal-footer"><button class="button button-quiet" type="button" id="modal-cancel">Cancelar</button><button class="button button-primary" type="submit" id="form-submit"><i data-lucide="check"></i><span>Salvar registro</span></button></footer></form>
+      </section>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
