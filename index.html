@@ -8,7 +8,30 @@
     <title>Varejo | Gestão da loja</title>
   </head>
   <body>
-    <div class="app-shell">
+    <section class="auth-screen" id="auth-screen">
+      <div class="auth-scene">
+        <a class="brand auth-brand" href="#login" aria-label="Varejo">
+          <span class="brand-mark"><i data-lucide="store"></i></span>
+          <span class="brand-copy"><strong>varejo</strong><small>gestão da loja</small></span>
+        </a>
+        <div class="scene-copy"><span class="scene-kicker">GESTÃO, DO SEU JEITO</span><h1>O dia da loja<br>começa por aqui.</h1><p>Entre para acompanhar produtos, estoque e operação.</p></div>
+        <div class="scene-art" aria-hidden="true"><div class="art-ring ring-one"></div><div class="art-ring ring-two"></div><div class="art-sun"></div><div class="art-shelf shelf-one"><span></span><span></span><span></span></div><div class="art-shelf shelf-two"><span></span><span></span><span></span><span></span></div><div class="art-counter"></div><div class="art-plant"><i></i><i></i><i></i></div></div>
+        <div class="scene-footer"><span>VAREJO</span><span>GESTÃO DA LOJA</span><span>·</span><span>ÁREA RESTRITA</span></div>
+      </div>
+      <div class="auth-panel"><div class="auth-form-wrap">
+        <div class="auth-mobile-brand"><span class="brand-mark"><i data-lucide="store"></i></span><span class="brand-copy"><strong>varejo</strong><small>gestão da loja</small></span></div>
+        <div class="auth-heading"><span class="eyebrow">ÁREA RESTRITA</span><h2>Acesse sua conta</h2><p>Entre com as credenciais cadastradas na loja.</p></div>
+        <form id="login-form" class="login-form" novalidate>
+          <label class="login-field" for="login-email"><span>E-mail</span><span class="login-input-wrap"><i data-lucide="mail"></i><input id="login-email" name="email" type="email" autocomplete="username" placeholder="voce@empresa.com" required></span></label>
+          <label class="login-field" for="login-password"><span>Senha</span><span class="login-input-wrap"><i data-lucide="lock-keyhole"></i><input id="login-password" name="senha" type="password" autocomplete="current-password" placeholder="Digite sua senha" required><button class="password-toggle" id="password-toggle" type="button" aria-label="Mostrar senha"><i data-lucide="eye"></i></button></span></label>
+          <p class="login-error" id="login-error" role="alert" hidden></p>
+          <button class="button button-primary login-submit" id="login-submit" type="submit"><span>Entrar no painel</span><i data-lucide="arrow-right"></i></button>
+        </form>
+        <div class="auth-footnote"><i data-lucide="shield-check"></i><span>Sua sessão expira após 8 horas</span></div>
+      </div><div class="auth-panel-footer"><span>Varejo · Gestão da loja</span><span id="auth-api-label">API conectada</span></div></div>
+    </section>
+
+    <div class="app-shell" id="app-shell" hidden>
       <aside class="sidebar" id="sidebar">
         <a class="brand" href="#inicio" aria-label="Varejo, início">
           <span class="brand-mark"><i data-lucide="store"></i></span>
@@ -21,7 +44,7 @@
         <div class="nav-caption section-caption">OPERAÇÃO</div>
         <nav class="resource-nav" id="resource-nav" aria-label="Recursos da loja"></nav>
         <div class="sidebar-bottom">
-          <div class="store-chip"><span class="store-avatar">L</span><span><strong>Loja principal</strong><small>Operação</small></span><i data-lucide="chevrons-up-down"></i></div>
+          <div class="store-chip"><span class="store-avatar" id="user-initials">L</span><span><strong id="user-name">Loja principal</strong><small id="user-email">Operação</small></span><button class="logout-button" id="logout-button" aria-label="Sair da conta" title="Sair"><i data-lucide="log-out"></i></button></div>
           <button class="api-link" id="api-settings"><span class="status-dot" id="api-dot"></span><span id="api-status">Conectando à API</span><i data-lucide="settings-2"></i></button>
         </div>
       </aside>

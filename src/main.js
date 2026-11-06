@@ -1,14 +1,17 @@
 import {
   ArrowDownToLine, ArrowUpFromLine, ArrowUpRight, Boxes, ChartNoAxesColumnIncreasing,
-  Check, ChevronRight, ChevronsUpDown, CloudOff, ContactRound, createIcons, Inbox,
-  LayoutDashboard, Menu, Package, Package2, Pencil, Plus, RefreshCw, Repeat2, Search,
-  Settings2, ShoppingBag, Store, Tags, Trash2, TriangleAlert, Truck, UsersRound, X
+  ArrowRight, Check, ChevronRight, ChevronsUpDown, CloudOff, ContactRound, createIcons,
+  Eye, EyeOff, Inbox, LayoutDashboard, LockKeyhole, LogOut, Mail, Menu, Package, Package2,
+  Pencil, Plus, RefreshCw, Repeat2, Search, Settings2, ShieldCheck, ShoppingBag,
+  Store, Tags, Trash2, TriangleAlert, Truck, UsersRound, X
 } from 'lucide';
 import './style.css';
 
 const DEFAULT_API_URL = 'https://backend-bse5.onrender.com';
 const savedApiUrl = localStorage.getItem('loja-api-url');
 let apiUrl = (savedApiUrl || DEFAULT_API_URL).replace(/\/$/, '');
+const SESSION_KEY = 'loja-auth-session';
+let accessToken = null;
 
 const resources = {
   products: {
@@ -124,16 +127,17 @@ const resources = {
   }
 };
 
-const state = { page: 'dashboard', data: {}, query: '', editing: null, toastTimer: null };
+const state = { page: 'dashboard', data: {}, query: '', editing: null, toastTimer: null, user: null };
 const content = document.querySelector('#page-content');
 const nav = document.querySelector('#resource-nav');
 
 function renderIcons() {
   createIcons({ icons: {
-    ArrowDownToLine, ArrowUpFromLine, ArrowUpRight, Boxes, ChartNoAxesColumnIncreasing,
-    Check, ChevronRight, ChevronsUpDown, CloudOff, ContactRound, Inbox, LayoutDashboard,
-    Menu, Package, Package2, Pencil, Plus, RefreshCw, Repeat2, Search, Settings2,
-    ShoppingBag, Store, Tags, Trash2, TriangleAlert, Truck, UsersRound, X
+    ArrowDownToLine, ArrowRight, ArrowUpFromLine, ArrowUpRight, Boxes, ChartNoAxesColumnIncreasing,
+    Check, ChevronRight, ChevronsUpDown, CloudOff, ContactRound, Eye, EyeOff, Inbox, LayoutDashboard,
+    LockKeyhole, LogOut, Mail, Menu, Package, Package2, Pencil, Plus, RefreshCw, Repeat2,
+    Search, Settings2, ShieldCheck, ShoppingBag, Store, Tags, Trash2, TriangleAlert,
+    Truck, UsersRound, X
   } });
 }
 
@@ -145,9 +149,11 @@ function setApiStatus(status) {
 }
 
 async function request(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...options.headers };
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
   const response = await fetch(`${apiUrl}/${path}`, {
     ...options,
-    headers: { 'Content-Type': 'application/json', ...options.headers }
+    headers
   });
   const text = await response.text();
   let payload = {};
@@ -458,10 +464,98 @@ async function checkConnection() {
   }
 }
 
+function readSession() {
+  try {
+    const session = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+    if (!session?.token || !session?.user) return null;
+    const payload = JSON.parse(atob(session.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload.exp || payload.exp * 1000 <= Date.now()) return null;
+    return session;
+  } catch {
+    return null;
+  }
+}
+
+function setAuthError(message) {
+  const error = document.querySelector('#login-error');
+  error.textContent = message;
+  error.hidden = !message;
+}
+
+function showAuthenticatedArea(user) {
+  state.user = user;
+  document.querySelector('#auth-screen').hidden = true;
+  document.querySelector('#app-shell').hidden = false;
+  document.querySelector('#user-name').textContent = user.nome || 'Usuário';
+  document.querySelector('#user-email').textContent = user.email || 'Sessão ativa';
+  document.querySelector('#user-initials').textContent = (user.nome || user.email || 'U')
+    .split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map(part => part[0].toLocaleUpperCase('pt-BR')).join('');
+  renderDashboard();
+  checkConnection();
+}
+
+async function login(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  if (!form.reportValidity()) return;
+  const submit = document.querySelector('#login-submit');
+  const submitLabel = submit.querySelector('span');
+  setAuthError('');
+  submit.disabled = true;
+  submitLabel.textContent = 'Autenticando...';
+  try {
+    const response = await request('usuario/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: form.elements.email.value.trim(),
+        senha: form.elements.senha.value
+      })
+    });
+    if (!response.token || !response.usuario) throw new Error('A API não retornou uma sessão válida.');
+    const session = { token: response.token, user: response.usuario };
+    accessToken = session.token;
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    form.reset();
+    showAuthenticatedArea(session.user);
+  } catch (error) {
+    setAuthError(error.message || 'Não foi possível entrar. Verifique suas credenciais.');
+    form.elements.senha.value = '';
+    form.elements.email.focus();
+  } finally {
+    submit.disabled = false;
+    submitLabel.textContent = 'Entrar no painel';
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  accessToken = null;
+  state.user = null;
+  state.data = {};
+  state.page = 'dashboard';
+  closeModal();
+  document.querySelector('#app-shell').hidden = true;
+  document.querySelector('#auth-screen').hidden = false;
+  document.querySelector('#login-form').reset();
+  setAuthError('');
+  document.querySelector('#login-email').focus();
+}
+
 document.querySelector('#modal-close').addEventListener('click', closeModal);
 document.querySelector('#modal-cancel').addEventListener('click', closeModal);
 document.querySelector('#modal-backdrop').addEventListener('click', event => { if (event.target.id === 'modal-backdrop') closeModal(); });
 document.querySelector('#record-form').addEventListener('submit', saveRecord);
+document.querySelector('#login-form').addEventListener('submit', login);
+document.querySelector('#logout-button').addEventListener('click', logout);
+document.querySelector('#password-toggle').addEventListener('click', event => {
+  const password = document.querySelector('#login-password');
+  const button = event.currentTarget;
+  const showPassword = password.type === 'password';
+  password.type = showPassword ? 'text' : 'password';
+  button.setAttribute('aria-label', showPassword ? 'Ocultar senha' : 'Mostrar senha');
+  button.innerHTML = `<i data-lucide="${showPassword ? 'eye-off' : 'eye'}"></i>`;
+  renderIcons();
+});
 document.querySelector('#menu-toggle').addEventListener('click', () => document.querySelector('#sidebar').classList.toggle('is-open'));
 document.querySelector('#api-settings').addEventListener('click', async () => {
   const answer = window.prompt('Endereço base da API:', apiUrl);
@@ -477,5 +571,14 @@ document.querySelector('#today-label').textContent = new Intl.DateTimeFormat('pt
 document.querySelector('[data-page="dashboard"]').addEventListener('click', () => navigate('dashboard'));
 renderNav();
 setActiveNav();
-renderDashboard();
-checkConnection();
+renderIcons();
+document.querySelector('#auth-api-label').textContent = new URL(apiUrl).host;
+const existingSession = readSession();
+if (existingSession) {
+  accessToken = existingSession.token;
+  showAuthenticatedArea(existingSession.user);
+} else {
+  sessionStorage.removeItem(SESSION_KEY);
+  document.querySelector('#auth-screen').hidden = false;
+  document.querySelector('#login-email').focus();
+}
